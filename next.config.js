@@ -5,7 +5,6 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ["pdfkit", "exceljs"],
-    optimizeCss: true,
     optimizePackageImports: ["lucide-react", "@radix-ui/react-*"],
   },
   compiler: {
