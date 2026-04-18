@@ -6,7 +6,7 @@ interface CreateNotificationOptions {
   type: NotificationType;
   title: string;
   message: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
 }
 
 export async function createNotification({
