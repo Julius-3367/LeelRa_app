@@ -1,0 +1,194 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT_STAFF
+  MEMBER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  UNDER_CONSIDERATION
+}
+
+enum ActivityStatus {
+  UPCOMING
+  ATTENDED
+  CANCELLED
+}
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  REQUEST_CONSIDERATION
+  EVENT_REMINDER
+  EVENT_ATTENDED
+  SYSTEM
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  phone           String?
+  passwordHash    String    @map("password_hash")
+  role            UserRole  @default(MEMBER)
+  isActive        Boolean   @default(true) @map("is_active")
+  profilePhoto    String?   @map("profile_photo")
+  fcmToken        String?   @map("fcm_token")
+  twoFactorSecret String?   @map("two_factor_secret")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  activityRequests ActivityRequest[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  attendedEvents   AttendedEvent[]   @relation("LoggedBy")
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model ActivityRequest {
+  id                 String        @id @default(uuid())
+  title              String
+  description        String
+  venue              String
+  eventDate          DateTime      @map("event_date")
+  eventTime          String        @map("event_time")
+  expectedAttendance Int           @map("expected_attendance")
+  organiserName      String        @map("organiser_name")
+  contactPhone       String        @map("contact_phone")
+  attachmentUrl      String?       @map("attachment_url")
+  status             RequestStatus @default(PENDING)
+  adminNotes         String?       @map("admin_notes")
+  reviewedAt         DateTime?     @map("reviewed_at")
+  reviewedBy         String?       @map("reviewed_by")
+  submittedById      String        @map("submitted_by_id")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  submittedBy User      @relation(fields: [submittedById], references: [id])
+  activity    Activity?
+
+  @@index([status])
+  @@index([eventDate])
+  @@index([submittedById])
+  @@map("activity_requests")
+}
+
+model Activity {
+  id          String         @id @default(uuid())
+  title       String
+  description String
+  venue       String
+  eventDate   DateTime       @map("event_date")
+  eventTime   String         @map("event_time")
+  status      ActivityStatus @default(UPCOMING)
+  requestId   String         @unique @map("request_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  request       ActivityRequest @relation(fields: [requestId], references: [id])
+  attendedEvent AttendedEvent?
+
+  @@index([status])
+  @@index([eventDate])
+  @@map("activities")
+}
+
+model AttendedEvent {
+  id               String   @id @default(uuid())
+  activityId       String   @unique @map("activity_id")
+  dateAttended     DateTime @map("date_attended")
+  venue            String
+  participantCount Int      @map("participant_count")
+  notes            String?
+  photos           String[] @default([])
+  loggedById       String   @map("logged_by_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  activity Activity @relation(fields: [activityId], references: [id])
+  loggedBy User     @relation("LoggedBy", fields: [loggedById], references: [id])
+
+  @@index([dateAttended])
+  @@index([venue])
+  @@map("attended_events")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false) @map("is_read")
+  metadata  Json?
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  action      String
+  resource    String
+  resourceId  String?  @map("resource_id")
+  description String
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resource])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}

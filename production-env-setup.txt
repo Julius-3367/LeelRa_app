@@ -1,0 +1,80 @@
+# Production Environment Variables Setup
+# Copy these to your hosting platform (Vercel, Railway, etc.)
+
+# ===== DATABASE =====
+# Get from Supabase or Railway
+DATABASE_URL="postgresql://username:password@host:port/database"
+
+# ===== AUTHENTICATION =====
+NEXTAUTH_SECRET="generate-32-character-random-string"
+NEXTAUTH_URL="https://your-app.vercel.app"
+
+# ===== JWT TOKENS =====
+JWT_SECRET="generate-32-character-random-string"
+JWT_EXPIRES_IN="24h"
+REFRESH_TOKEN_EXPIRES_IN="7d"
+
+# ===== EMAIL SERVICE (SendGrid) =====
+SENDGRID_API_KEY="SG.your-sendgrid-api-key"
+EMAIL_FROM="noreply@leelra.ke"
+EMAIL_FROM_NAME="LeelRa App"
+
+# ===== FIREBASE FOR PUSH NOTIFICATIONS =====
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"your-project-id","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"firebase-adminsdk-...@your-project.iam.gserviceaccount.com"}'
+
+# ===== CLOUDINARY FOR FILE UPLOADS =====
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+CLOUDINARY_URL="cloudinary://your-api-key:your-api-secret@your-cloud-name"
+
+# ===== PUSHER FOR REAL-TIME FEATURES =====
+PUSHER_APP_ID="your-pusher-app-id"
+PUSHER_KEY="your-pusher-key"
+PUSHER_SECRET="your-pusher-secret"
+PUSHER_CLUSTER="eu"
+NEXT_PUBLIC_PUSHER_KEY="your-pusher-key"
+NEXT_PUBLIC_PUSHER_CLUSTER="eu"
+
+# ===== APPLICATION URLS =====
+NEXT_PUBLIC_APP_URL="https://your-app.vercel.app"
+APP_URL="https://your-app.vercel.app"
+
+# ===== REDIS FOR CACHING =====
+REDIS_URL="redis://user:password@host:port"
+
+# ===== HOW TO GET THESE VALUES =====
+
+# 1. DATABASE (Supabase):
+#    - Go to supabase.com
+#    - Create project
+#    - Settings > Database > Connection string
+#    - Copy the URI
+
+# 2. NEXTAUTH_SECRET:
+#    - Run: openssl rand -base64 32
+#    - Or use: https://generate-secret.vercel.app/32
+
+# 3. SENDGRID_API_KEY:
+#    - Go to sendgrid.com
+#    - Create account
+#    - Settings > API Keys > Create API Key
+
+# 4. FIREBASE:
+#    - Go to firebase.google.com
+#    - Create project
+#    - Service Accounts > Generate new private key
+#    - Copy JSON content
+
+# 5. CLOUDINARY:
+#    - Go to cloudinary.com
+#    - Get Dashboard > Account Details
+
+# 6. PUSHER:
+#    - Go to pusher.com
+#    - Create app
+#    - Get app credentials
+
+# 7. REDIS:
+#    - Go to redis.com or use Railway Redis
+#    - Get connection string
