@@ -115,11 +115,12 @@ export const prisma = {
       return data.length > 0 ? data[0].count : 0;
     },
     
-    findMany: async ({ where, orderBy }: { where?: any; orderBy?: any } = {}) => {
+    findMany: async ({ where, orderBy, take, include }: { where?: any; orderBy?: any; take?: number; include?: any } = {}) => {
       let query = `${supabaseUrl}/rest/v1/activity_requests?`;
       if (where?.userId !== undefined) query += `user_id=eq.${where.userId}&`;
       if (where?.status !== undefined) query += `status=eq.${where.status}&`;
       if (orderBy?.createdAt) query += `order=created_at${orderBy.createdAt === 'desc' ? '.desc' : '.asc'}&`;
+      if (take) query += `limit=${take}&`;
       
       const response = await fetch(query.slice(0, -1), {
         headers: {
@@ -131,7 +132,20 @@ export const prisma = {
       
       if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       
-      return await response.json();
+      let data = await response.json();
+      
+      // Handle include relations (simplified for submittedBy)
+      if (include?.submittedBy) {
+        data = data.map((item: any) => ({
+          ...item,
+          submittedBy: {
+            name: item.submitted_by_name || 'Unknown',
+            email: item.submitted_by_email || 'unknown@example.com'
+          }
+        }));
+      }
+      
+      return data;
     },
   },
 
