@@ -10,10 +10,10 @@ export async function GET() {
     console.log("DATABASE_URL:", dbUrl ? "SET" : "NOT SET");
     console.log("Full DATABASE_URL:", dbUrl);
     
-    // Use working Transaction Pooler URL with connection pooling fix
-    const poolerUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres";
+    // Use Transaction Pooler URL with prepared statements disabled
+    const poolerUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?prepare=false&statement_cache_size=0&connection_limit=1";
     
-    // Create fresh Prisma client with connection pooling disabled
+    // Create fresh Prisma client with prepared statements disabled
     const prisma = new PrismaClient({
       log: ['error', 'warn'],
       datasources: {
