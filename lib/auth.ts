@@ -1,10 +1,13 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
+  // Temporarily disable adapter to avoid missing NextAuth tables
+  // adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -26,7 +29,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user.isActive) {
-          throw new Error("Your account has been deactivated");
+          console.log("User account is inactive - awaiting admin approval");
+          throw new Error("Your account is awaiting admin approval. Please contact an administrator.");
         }
 
         const isValid = await bcrypt.compare(
@@ -71,7 +75,7 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   session: {
-    strategy: "jwt",
+    strategy: "database",
     maxAge: 24 * 60 * 60, // 24 hours
   },
   secret: process.env.NEXTAUTH_SECRET,
