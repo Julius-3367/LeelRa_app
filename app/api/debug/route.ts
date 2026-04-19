@@ -10,33 +10,29 @@ export async function GET() {
     console.log("DATABASE_URL:", dbUrl ? "SET" : "NOT SET");
     console.log("Full DATABASE_URL:", dbUrl);
     
-    // Force DATABASE_URL to be read at runtime
-    const forcedDbUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres";
+    // Use direct database URL to avoid Transaction Pooler issues
+    const directDbUrl = "postgresql://postgres:tybp0pDhZCUf2JVr@db.opnloqodiufrbwuswfam.supabase.co:5432/postgres";
     
-    // Create fresh Prisma client with forced DATABASE_URL
+    // Create fresh Prisma client with direct database URL
     const prisma = new PrismaClient({
       log: ['error', 'warn'],
       datasources: {
         db: {
-          url: forcedDbUrl,
+          url: directDbUrl,
         },
       },
     });
     
-    // Test simple database connection
-    const result = await prisma.$executeRaw`SELECT 1`;
-    console.log("Database query result:", result);
-    
-    // Test user table
+    // Test database connection with simple Prisma query (no raw queries)
     const userCount = await prisma.user.count();
-    console.log("User count:", userCount);
+    console.log("Database connection successful, user count:", userCount);
     
     await prisma.$disconnect();
     
     return NextResponse.json({
       status: "success",
       database: "connected",
-      databaseUrl: forcedDbUrl.substring(0, 50) + "...",
+      databaseUrl: directDbUrl.substring(0, 50) + "...",
       envDatabaseUrl: dbUrl ? dbUrl.substring(0, 50) + "..." : "NOT SET",
       userCount: userCount,
       timestamp: new Date().toISOString(),
@@ -47,7 +43,7 @@ export async function GET() {
       status: "error",
       error: error instanceof Error ? error.message : "Unknown error",
       database: "disconnected",
-      databaseUrl: "postgresql://postgres.opnloqodiufrbwuswfam:***@aws-1-eu-north-1.pooler.supabase.com...",
+      databaseUrl: "postgresql://postgres:***@db.opnloqodiufrbwuswfam.supabase.co:5432/postgres",
       envDatabaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
       timestamp: new Date().toISOString(),
     }, { status: 500 });
