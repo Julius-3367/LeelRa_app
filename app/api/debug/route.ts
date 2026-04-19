@@ -24,7 +24,7 @@ export async function GET() {
     });
     
     // Test simple database connection
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
+    const result = await prisma.$queryRaw`SELECT 1 as test_connection`;
     console.log("Database query result:", result);
     
     // Test user table
