@@ -151,6 +151,86 @@ export const prisma = {
       return data.length > 0 ? data[0].count : 0;
     },
   },
+
+  activity: {
+    count: async ({ where }: { where?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/activities?select=count`;
+      if (where?.status !== undefined) query += `&status=eq.${where.status}`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      const data = await response.json();
+      return data.length > 0 ? data[0].count : 0;
+    },
+  },
+
+  notification: {
+    findMany: async ({ where }: { where?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/notifications?`;
+      if (where?.userId !== undefined) query += `user_id=eq.${where.userId}&`;
+      if (where?.isRead !== undefined) query += `is_read=eq.${where.isRead}&`;
+      
+      const response = await fetch(query.slice(0, -1), {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      return await response.json();
+    },
+  },
+
+  account: {
+    findUnique: async ({ where }: { where: { userId?: string } }) => {
+      let query = `${supabaseUrl}/rest/v1/accounts?`;
+      if (where.userId) query += `user_id=eq.${where.userId}`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      const accounts = await response.json();
+      return accounts.length > 0 ? accounts[0] : null;
+    },
+  },
+
+  session: {
+    findUnique: async ({ where }: { where: { sessionToken?: string } }) => {
+      let query = `${supabaseUrl}/rest/v1/sessions?`;
+      if (where.sessionToken) query += `session_token=eq.${where.sessionToken}`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      const sessions = await response.json();
+      return sessions.length > 0 ? sessions[0] : null;
+    },
+  },
   
   $disconnect: async () => {
     // No-op for REST API
