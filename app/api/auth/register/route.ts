@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,41 +20,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Supabase configuration
+    const supabaseUrl = "https://opnloqodiufrbwuswfam.supabase.co";
+    const supabaseKey = "sb_publishable_LyD1pKmVAOdWHfOIw9H8lA_8ws2mCP5";
+
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    const checkResponse = await fetch(`${supabaseUrl}/rest/v1/users?email=eq.${email}`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
     });
 
-    if (existingUser) {
+    if (!checkResponse.ok) {
+      throw new Error(`HTTP ${checkResponse.status}: ${checkResponse.statusText}`);
+    }
+
+    const existingUsers = await checkResponse.json();
+    if (existingUsers.length > 0) {
       return NextResponse.json(
-        { error: "A user with this email already exists" },
-        { status: 400 }
+        { error: "User with this email already exists" },
+        { status: 409 }
       );
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user with PENDING status (requires admin approval)
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email: email.toLowerCase(),
-        phone: phone || null,
-        passwordHash,
-        role: UserRole.MEMBER, // Default role
-        isActive: false, // Inactive until admin approval
+    // Create user via Supabase REST API
+    const createResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
       },
+      body: JSON.stringify({
+        name,
+        email,
+        password_hash: passwordHash,
+        phone,
+        role: 'MEMBER',
+        is_active: false, // Require admin approval
+      }),
     });
 
-    // Remove password from response
-    const { passwordHash: _, ...userWithoutPassword } = user;
+    if (!createResponse.ok) {
+      const errorData = await createResponse.text();
+      console.error("Create user error:", errorData);
+      throw new Error(`HTTP ${createResponse.status}: ${createResponse.statusText}`);
+    }
+
+    const createdUser = await createResponse.json();
+    const user = createdUser[0];
+
+    // Return user without password hash
+    const { password_hash: _, ...userWithoutPassword } = user;
 
     return NextResponse.json({
-      message: "Registration successful! Your account is awaiting admin approval.",
+      message: "User registered successfully. Awaiting admin approval.",
       user: userWithoutPassword,
     });
-
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
