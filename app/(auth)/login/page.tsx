@@ -149,8 +149,17 @@ export default function LoginPage() {
           </form>
         </div>
 
+        <div className="mt-6 text-center">
+          <p className="text-primary-200 text-sm">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-white hover:text-primary-200 font-medium">
+              Register here
+            </Link>
+          </p>
+        </div>
+
         <p className="text-center text-primary-200 text-xs mt-6">
-          &copy; {new Date().getFullYear()} LeelRa App. Confidential — Authorised Users Only.
+          &copy; {new Date().getFullYear()} LeelRa App. Confidential &mdash; Authorised Users Only.
         </p>
       </div>
     </div>

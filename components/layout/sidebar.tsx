@@ -68,10 +68,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
   },
   {
-    href: "/users",
+    href: "/admin/users",
     label: "User Management",
     icon: <Users className="w-5 h-5" />,
-    roles: [UserRole.SUPER_ADMIN],
+    roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
   },
   {
     href: "/notifications",

@@ -28,7 +28,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user.isActive) {
-          throw new Error("Your account has been deactivated");
+          console.log("User account is inactive - awaiting admin approval");
+          throw new Error("Your account is awaiting admin approval. Please contact an administrator.");
         }
 
         const isValid = await bcrypt.compare(
