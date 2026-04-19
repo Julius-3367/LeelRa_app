@@ -16,7 +16,7 @@ export async function DELETE(
 
     // Check if user is admin or super admin
     const admin = await prisma.user.findUnique({
-      where: { email: session.user?.email },
+      where: { email: session.user?.email || "" },
     });
 
     if (!admin || (admin.role !== "ADMIN" && admin.role !== "SUPER_ADMIN")) {

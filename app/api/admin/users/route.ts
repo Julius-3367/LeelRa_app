@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin or super admin
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email },
+      where: { email: session.user?.email || "" },
     });
 
     if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
