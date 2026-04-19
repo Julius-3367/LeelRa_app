@@ -244,9 +244,7 @@ export const prisma = {
       
       return data[0];
     },
-  },
-
-  notification: {
+  } notification: {
     findMany: async ({ where }: { where?: any } = {}) => {
       let query = `${supabaseUrl}/rest/v1/notifications?`;
       if (where?.userId !== undefined) query += `user_id=eq.${where.userId}&`;
