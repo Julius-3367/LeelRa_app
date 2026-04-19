@@ -212,6 +212,38 @@ export const prisma = {
       const data = await response.json();
       return data.length > 0 ? data[0].count : 0;
     },
+
+    findUnique: async ({ where, include }: { where: { id: string }; include?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/activities?id=eq.${where.id}`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      let data = await response.json();
+      if (data.length === 0) return null;
+      
+      // Handle include relations (simplified for request)
+      if (include?.request) {
+        data = data.map((item: any) => ({
+          ...item,
+          request: {
+            organiserName: item.organiser_name || 'Unknown',
+            contactPhone: item.contact_phone || 'Unknown',
+            expectedAttendance: item.expected_attendance || 0,
+            attachmentUrl: item.attachment_url || null
+          }
+        }));
+      }
+      
+      return data[0];
+    },
   },
 
   notification: {
