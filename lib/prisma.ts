@@ -60,9 +60,22 @@ export const prisma = {
       return data.length > 0 ? data[0].count : 0;
     },
     
-    findMany: async ({ where }: { where?: any } = {}) => {
+    findMany: async ({ where, select, orderBy }: { where?: any; select?: any; orderBy?: any } = {}) => {
       let query = `${supabaseUrl}/rest/v1/users?`;
       if (where?.is_active !== undefined) query += `is_active=eq.${where.is_active}&`;
+      
+      // Handle select parameter
+      if (select) {
+        const selectedFields = Object.keys(select).filter(key => select[key]);
+        if (selectedFields.length > 0) {
+          query += `select=${selectedFields.join(',')}&`;
+        }
+      }
+      
+      // Handle orderBy parameter
+      if (orderBy?.createdAt) {
+        query += `order=created_at${orderBy.createdAt === 'desc' ? '.desc' : '.asc'}&`;
+      }
       
       const response = await fetch(query.slice(0, -1), {
         headers: {
