@@ -8,10 +8,19 @@ export async function GET() {
     // Show exact DATABASE_URL being used
     const dbUrl = process.env.DATABASE_URL;
     console.log("DATABASE_URL:", dbUrl ? "SET" : "NOT SET");
+    console.log("Full DATABASE_URL:", dbUrl);
     
-    // Create fresh Prisma client to avoid caching
+    // Force DATABASE_URL to be read at runtime
+    const forcedDbUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres";
+    
+    // Create fresh Prisma client with forced DATABASE_URL
     const prisma = new PrismaClient({
       log: ['error', 'warn'],
+      datasources: {
+        db: {
+          url: forcedDbUrl,
+        },
+      },
     });
     
     // Test simple database connection
@@ -27,7 +36,8 @@ export async function GET() {
     return NextResponse.json({
       status: "success",
       database: "connected",
-      databaseUrl: dbUrl ? dbUrl.substring(0, 50) + "..." : "NOT SET",
+      databaseUrl: forcedDbUrl.substring(0, 50) + "...",
+      envDatabaseUrl: dbUrl ? dbUrl.substring(0, 50) + "..." : "NOT SET",
       userCount: userCount,
       timestamp: new Date().toISOString(),
     });
@@ -37,7 +47,8 @@ export async function GET() {
       status: "error",
       error: error instanceof Error ? error.message : "Unknown error",
       database: "disconnected",
-      databaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
+      databaseUrl: "postgresql://postgres.opnloqodiufrbwuswfam:***@aws-1-eu-north-1.pooler.supabase.com...",
+      envDatabaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
