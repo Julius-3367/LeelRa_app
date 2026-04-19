@@ -1,39 +1,37 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 
 export async function GET() {
   try {
     console.log("Debug endpoint called");
     
-    // Show exact DATABASE_URL being used
-    const dbUrl = process.env.DATABASE_URL;
-    console.log("DATABASE_URL:", dbUrl ? "SET" : "NOT SET");
-    console.log("Full DATABASE_URL:", dbUrl);
+    // Test Supabase REST API connection
+    const supabaseUrl = "https://opnloqodiufrbwuswfam.supabase.co";
+    const supabaseKey = "sb_publishable_LyD1pKmVAOdWHfOIw9H8lA_8ws2mCP5";
     
-    // Use Transaction Pooler URL with prepared statements disabled
-    const poolerUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?prepare=false&statement_cache_size=0&connection_limit=1";
-    
-    // Create fresh Prisma client with prepared statements disabled
-    const prisma = new PrismaClient({
-      log: ['error', 'warn'],
-      datasources: {
-        db: {
-          url: poolerUrl,
-        },
+    // Test simple connection via REST API
+    const response = await fetch(`${supabaseUrl}/rest/v1/users?select=count`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
       },
     });
     
-    // Test database connection with simple Prisma query (no raw queries)
-    const userCount = await prisma.user.count();
-    console.log("Database connection successful, user count:", userCount);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     
-    await prisma.$disconnect();
+    const data = await response.json();
+    const userCount = data.length > 0 ? data[0].count : 0;
+    
+    console.log("Supabase REST API connection successful, user count:", userCount);
     
     return NextResponse.json({
       status: "success",
       database: "connected",
-      databaseUrl: poolerUrl.substring(0, 50) + "...",
-      envDatabaseUrl: dbUrl ? dbUrl.substring(0, 50) + "..." : "NOT SET",
+      databaseUrl: "Supabase REST API",
+      connectionMethod: "REST API",
       userCount: userCount,
       timestamp: new Date().toISOString(),
     });
@@ -43,8 +41,8 @@ export async function GET() {
       status: "error",
       error: error instanceof Error ? error.message : "Unknown error",
       database: "disconnected",
-      databaseUrl: "postgresql://postgres.opnloqodiufrbwuswfam:***@aws-1-eu-north-1.pooler.supabase.com:6543/postgres",
-      envDatabaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
+      databaseUrl: "Supabase REST API",
+      connectionMethod: "REST API",
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
