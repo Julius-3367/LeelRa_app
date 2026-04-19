@@ -10,15 +10,15 @@ export async function GET() {
     console.log("DATABASE_URL:", dbUrl ? "SET" : "NOT SET");
     console.log("Full DATABASE_URL:", dbUrl);
     
-    // Use direct database URL to avoid Transaction Pooler issues
-    const directDbUrl = "postgresql://postgres:tybp0pDhZCUf2JVr@db.opnloqodiufrbwuswfam.supabase.co:5432/postgres";
+    // Use working Transaction Pooler URL with connection pooling fix
+    const poolerUrl = "postgresql://postgres.opnloqodiufrbwuswfam:tybp0pDhZCUf2JVr@aws-1-eu-north-1.pooler.supabase.com:6543/postgres";
     
-    // Create fresh Prisma client with direct database URL
+    // Create fresh Prisma client with connection pooling disabled
     const prisma = new PrismaClient({
       log: ['error', 'warn'],
       datasources: {
         db: {
-          url: directDbUrl,
+          url: poolerUrl,
         },
       },
     });
@@ -32,7 +32,7 @@ export async function GET() {
     return NextResponse.json({
       status: "success",
       database: "connected",
-      databaseUrl: directDbUrl.substring(0, 50) + "...",
+      databaseUrl: poolerUrl.substring(0, 50) + "...",
       envDatabaseUrl: dbUrl ? dbUrl.substring(0, 50) + "..." : "NOT SET",
       userCount: userCount,
       timestamp: new Date().toISOString(),
@@ -43,7 +43,7 @@ export async function GET() {
       status: "error",
       error: error instanceof Error ? error.message : "Unknown error",
       database: "disconnected",
-      databaseUrl: "postgresql://postgres:***@db.opnloqodiufrbwuswfam.supabase.co:5432/postgres",
+      databaseUrl: "postgresql://postgres.opnloqodiufrbwuswfam:***@aws-1-eu-north-1.pooler.supabase.com:6543/postgres",
       envDatabaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + "..." : "NOT SET",
       timestamp: new Date().toISOString(),
     }, { status: 500 });
