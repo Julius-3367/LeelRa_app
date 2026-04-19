@@ -1,27 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma, testDatabaseConnection } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
-import { validateEnvironmentVariables } from "@/lib/env-check";
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate environment variables
-    if (!validateEnvironmentVariables()) {
-      return NextResponse.json(
-        { error: "Server configuration error. Please contact administrator." },
-        { status: 500 }
-      );
-    }
-
-    // Test database connection first
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      return NextResponse.json(
-        { error: "Database connection failed. Please try again later." },
-        { status: 500 }
-      );
-    }
     const { name, email, password, phone } = await request.json();
 
     // Validation

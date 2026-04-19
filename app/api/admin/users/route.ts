@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma, testDatabaseConnection } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    // Test database connection first
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      return NextResponse.json(
-        { error: "Database connection failed. Please try again later." },
-        { status: 500 }
-      );
-    }
     const session = await getServerSession(authOptions);
 
     if (!session) {
