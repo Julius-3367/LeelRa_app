@@ -94,6 +94,21 @@ export const prisma = {
       const users = await response.json();
       return users[0];
     },
+
+    delete: async ({ where }: { where: { id: string } }) => {
+      const response = await fetch(`${supabaseUrl}/rest/v1/users?id=eq.${where.id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      return; // Prisma delete returns nothing
+    },
   },
 
   activityRequest: {
