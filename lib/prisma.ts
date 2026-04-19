@@ -42,8 +42,11 @@ export const prisma = {
       return users[0];
     },
     
-    count: async () => {
-      const response = await fetch(`${supabaseUrl}/rest/v1/users?select=count`, {
+    count: async ({ where }: { where?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/users?select=count`;
+      if (where?.is_active !== undefined) query += `&is_active=eq.${where.is_active}`;
+      
+      const response = await fetch(query, {
         headers: {
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
@@ -90,6 +93,62 @@ export const prisma = {
       
       const users = await response.json();
       return users[0];
+    },
+  },
+
+  activityRequest: {
+    count: async ({ where }: { where?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/activity_requests?select=count`;
+      if (where?.status !== undefined) query += `&status=eq.${where.status}`;
+      
+      const response = await fetch(query, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      const data = await response.json();
+      return data.length > 0 ? data[0].count : 0;
+    },
+    
+    findMany: async ({ where, orderBy }: { where?: any; orderBy?: any } = {}) => {
+      let query = `${supabaseUrl}/rest/v1/activity_requests?`;
+      if (where?.userId !== undefined) query += `user_id=eq.${where.userId}&`;
+      if (where?.status !== undefined) query += `status=eq.${where.status}&`;
+      if (orderBy?.createdAt) query += `order=created_at${orderBy.createdAt === 'desc' ? '.desc' : '.asc'}&`;
+      
+      const response = await fetch(query.slice(0, -1), {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      return await response.json();
+    },
+  },
+
+  attendedEvent: {
+    count: async () => {
+      const response = await fetch(`${supabaseUrl}/rest/v1/attended_events?select=count`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      const data = await response.json();
+      return data.length > 0 ? data[0].count : 0;
     },
   },
   
