@@ -6,7 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  // Temporarily disable adapter to avoid missing NextAuth tables
+  // adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: "credentials",
